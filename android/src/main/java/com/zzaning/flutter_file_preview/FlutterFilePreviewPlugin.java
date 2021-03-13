@@ -9,6 +9,8 @@ import androidx.annotation.NonNull;
 
 import com.tencent.smtt.export.external.TbsCoreSettings;
 import com.tencent.smtt.sdk.QbSdk;
+import com.tencent.smtt.sdk.TbsDownloader;
+import com.tencent.smtt.sdk.TbsListener;
 
 import java.util.HashMap;
 
@@ -33,7 +35,6 @@ public class FlutterFilePreviewPlugin implements FlutterPlugin, MethodCallHandle
         channel = new MethodChannel(flutterPluginBinding.getFlutterEngine().getDartExecutor(), "flutter_file_preview");
         channel.setMethodCallHandler(this);
         context = flutterPluginBinding.getApplicationContext();
-        initQbSdk();
     }
 
     public static void registerWith(Registrar registrar) {
@@ -42,7 +43,6 @@ public class FlutterFilePreviewPlugin implements FlutterPlugin, MethodCallHandle
         channel.setMethodCallHandler(plugin);
         plugin.context = registrar.context();
         plugin.activity = registrar.activity();
-        plugin.initQbSdk();
     }
 
     /* 监听Activity*/
@@ -68,15 +68,30 @@ public class FlutterFilePreviewPlugin implements FlutterPlugin, MethodCallHandle
         // your plugin is no longer associated with an Activity. Clean up references.
     }
 
-    private void initQbSdk() {
+    private void initQbSdk(Result result) {
         // 首次初始化冷启动优化
         // 在调用TBS初始化、创建WebView之前进行如下配置
+        Log.d(TAG, "isTbsCoreInited:::::"+QbSdk.isTbsCoreInited());
         HashMap map = new HashMap();
         map.put(TbsCoreSettings.TBS_SETTINGS_USE_SPEEDY_CLASSLOADER, true);
         map.put(TbsCoreSettings.TBS_SETTINGS_USE_DEXLOADER_SERVICE, true);
         QbSdk.initTbsSettings(map);
 
         QbSdk.setDownloadWithoutWifi(true);
+        QbSdk.setTbsListener(new TbsListener() {
+            @Override
+            public void onDownloadFinish(int i) {
+                Log.e(TAG, "onInstallFinish: 内核下载回调:::"+i );
+            }
+            @Override
+            public void onInstallFinish(int i) {
+                Log.e(TAG, "onInstallFinish: 内核安装回调:::"+i );
+            }
+            @Override
+            public void onDownloadProgress(int i) {
+                Log.e(TAG, "onInstallFinish: 内核下载进度回调:::"+i );
+            }
+        });
         QbSdk.initX5Environment(context, new QbSdk.PreInitCallback() {
           @Override
           public void onCoreInitFinished() {
@@ -88,6 +103,7 @@ public class FlutterFilePreviewPlugin implements FlutterPlugin, MethodCallHandle
           public void onViewInitFinished(boolean b) {
             //x5內核初始化完成的回调，为true表示x5内核加载成功，否则表示x5内核加载失败，会自动切换到系统内核。
             Log.e(TAG, "加载内核是否成功:" + b);
+            result.success(b);
           }
         });
     }
@@ -112,6 +128,12 @@ public class FlutterFilePreviewPlugin implements FlutterPlugin, MethodCallHandle
                 break;
             case "getPlatformVersion":
                 result.success("Android " + android.os.Build.VERSION.RELEASE);
+                break;
+            case "init":
+                initQbSdk(result);
+                break;
+            case "isInited":
+                result.success(QbSdk.isTbsCoreInited());
                 break;
             default:
                 result.notImplemented();
