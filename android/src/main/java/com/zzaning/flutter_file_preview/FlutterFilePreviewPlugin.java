@@ -49,6 +49,7 @@ public class FlutterFilePreviewPlugin implements FlutterPlugin, MethodCallHandle
     @Override
     public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
         this.activity = binding.getActivity();
+        initQbSdk();
     }
 
     @Override
@@ -68,7 +69,7 @@ public class FlutterFilePreviewPlugin implements FlutterPlugin, MethodCallHandle
         // your plugin is no longer associated with an Activity. Clean up references.
     }
 
-    private void initQbSdk(Result result) {
+    private void initQbSdk() {
         // 首次初始化冷启动优化
         // 在调用TBS初始化、创建WebView之前进行如下配置
         Log.d(TAG, "isTbsCoreInited:::::"+QbSdk.isTbsCoreInited());
@@ -103,7 +104,7 @@ public class FlutterFilePreviewPlugin implements FlutterPlugin, MethodCallHandle
           public void onViewInitFinished(boolean b) {
             //x5內核初始化完成的回调，为true表示x5内核加载成功，否则表示x5内核加载失败，会自动切换到系统内核。
             Log.e(TAG, "加载内核是否成功:" + b);
-            result.success(b);
+            //result.success(b);
           }
         });
     }
@@ -130,7 +131,7 @@ public class FlutterFilePreviewPlugin implements FlutterPlugin, MethodCallHandle
                 result.success("Android " + android.os.Build.VERSION.RELEASE);
                 break;
             case "init":
-                initQbSdk(result);
+                //initQbSdk(result);
                 break;
             case "isInited":
                 result.success(QbSdk.isTbsCoreInited());
