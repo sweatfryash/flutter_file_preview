@@ -49,7 +49,7 @@ public class FlutterFilePreviewPlugin implements FlutterPlugin, MethodCallHandle
     @Override
     public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
         this.activity = binding.getActivity();
-        initQbSdk();
+        //initQbSdk();
     }
 
     @Override
@@ -131,7 +131,7 @@ public class FlutterFilePreviewPlugin implements FlutterPlugin, MethodCallHandle
                 result.success("Android " + android.os.Build.VERSION.RELEASE);
                 break;
             case "init":
-                //initQbSdk(result);
+                initQbSdk();
                 break;
             case "isInited":
                 result.success(QbSdk.isTbsCoreInited());
